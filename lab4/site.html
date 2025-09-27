@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echelon | Curated Goods</title>
+    
+    <!-- Tailwind CSS for rapid, modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Playfair Display & Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <!-- This block contains all the custom CSS -->
+    <style>
+        :root {
+            --accent-color: #c2410c; /* A warm orange accent */
+        }
+
+        /* #region --- Base & Typography (Light Theme) --- */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #f4f4f4; /* Light gray background */
+            color: #2d2d2d; /* Dark text for readability */
+            overflow-x: hidden;
+            cursor: none; 
+        }
+
+        ::selection {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+        
+        .heading-xl, .heading-lg {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .heading-xl {
+            font-size: clamp(2.5rem, 10vw, 7rem);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .heading-lg {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+        /* #endregion */
+        
+        /* #region --- Preloader --- */
+        .preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #f4f4f4; z-index: 10000; display: flex;
+            justify-content: center; align-items: center; transition: opacity 0.5s ease;
+        }
+        .preloader.fade-out { opacity: 0; }
+        .loader {
+            width: 50px; height: 50px; border: 4px solid #ddd;
+            border-top-color: var(--accent-color); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* #endregion */
+
+        /* #region --- Page Transitions & Scroll Animations --- */
+        .page {
+            display: none;
+            animation: fadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        /* #endregion */
+        
+        /* #region --- Custom Cursor --- */
+        .cursor {
+            position: fixed; width: 25px; height: 25px; background-color: var(--accent-color);
+            border-radius: 50%; left: 0; top: 0; pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, opacity 0.3s, transform 0.1s linear;
+            z-index: 9999; mix-blend-mode: exclusion;
+        }
+        .cursor.hover-grow { width: 50px; height: 50px; }
+        /* #endregion */
+
+        /* #region --- Header --- */
+        header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+        header.scrolled {
+            background-color: rgba(244, 244, 244, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        /* #endregion */
+        
+        /* #region --- Buttons --- */
+        .primary-btn {
+            display: inline-block; background-color: #2d2d2d; color: #f4f4f4; padding: 1rem 2.5rem;
+            border-radius: 0.5rem; font-weight: 700; letter-spacing: 0.05em;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .primary-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.15);
+            background-color: var(--accent-color);
+        }
+
+        .secondary-btn {
+            display: inline-block; background-color: transparent; color: #2d2d2d; padding: 1rem 2rem; border-radius: 0.5rem;
+            font-weight: 700; transition: all 0.3s; border: 2px solid #2d2d2d;
+        }
+        .secondary-btn:hover { background-color: #2d2d2d; color: #f4f4f4; }
+        /* #endregion */
+
+        /* #region --- Product Card --- */
+        .product-card {
+            background-color: #ffffff; border-radius: 0.5rem; overflow: hidden;
+            transition: box-shadow 0.4s ease;
+            border: 1px solid #e5e5e5;
+        }
+        .product-card:hover { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1); }
+        .product-card .product-image-container { overflow: hidden; }
+        .product-card .product-image { transition: transform 0.4s ease; }
+        .product-card:hover .product-image { transform: scale(1.05); }
+        /* #endregion */
+
+        /* #region --- Category Card --- */
+        .category-card {
+            position: relative; aspect-ratio: 1 / 1; border-radius: 0.5rem;
+            overflow: hidden; color: white; display: flex; align-items: flex-end; padding: 2rem;
+            transition: box-shadow 0.4s ease;
+        }
+        .category-card:hover { box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2); }
+        .category-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 50%); z-index: 1;
+        }
+        .category-card-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .category-card:hover .category-card-image { transform: scale(1.1); }
+        .category-card-content { position: relative; z-index: 2; }
+        /* #endregion */
+
+        /* #region --- Marquee --- */
+        .marquee { overflow: hidden; white-space: nowrap; box-sizing: border-box; }
+        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 30s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        /* #endregion */
+
+        /* #region --- Cart Modal --- */
+        .cart-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .cart-overlay.active { opacity: 1; pointer-events: all; }
+
+        .cart-modal {
+            position: fixed; top: 0; right: 0; width: 100%; max-width: 450px; height: 100%; background-color: #ffffff; color: #2d2d2d;
+            z-index: 101; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex; flex-direction: column;
+        }
+        .cart-modal.active { transform: translateX(0); }
+        /* #endregion */
+
+        /* #region --- Toast --- */
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translate(-50%, 150%); background-color: #2d2d2d;
+            color: #f4f4f4; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 500;
+            z-index: 9999; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .toast.show { transform: translate(-50%, 0); }
+        /* #endregion */
+    </style>
+</head>
+<body class="antialiased">
+    
+    <div id="preloader" class="preloader"><div class="loader"></div></div>
+    <div class="cursor"></div>
+    <div id="toast" class="toast"></div>
+
+    <header id="header" class="fixed top-0 left-0 w-full z-50 p-4 sm:p-6 md:p-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#home" class="nav-link text-3xl font-bold tracking-tight cursor-pointer" style="font-family: 'Playfair Display', serif;">Echelon</a>
+            <nav class="hidden md:flex items-center gap-2 bg-white/50 border border-gray-200 p-2 rounded-lg">
+                <a href="#home" class="nav-link px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">Home</a>
+                <a href="#shop" class="nav-link px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">Shop</a>
+                <a href="#about" class="nav-link px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">About</a>
+                <a href="#contact" class="nav-link px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">Contact</a>
+            </nav>
+            <button id="cart-btn" class="px-5 py-2 rounded-lg bg-gray-900 text-white hover:bg-orange-800 transition-colors relative">
+                Cart <span id="cart-count" class="ml-1">(0)</span>
+            </button>
+            <button id="mobile-menu-btn" class="md:hidden z-50 text-2xl">☰</button>
+        </div>
+    </header>
+    
+    <div id="mobile-menu" class="fixed top-0 left-0 w-full h-full bg-[#f4f4f4] flex flex-col justify-center items-center gap-8 z-40 transition-transform transform -translate-y-full">
+        <a href="#home" class="nav-link text-4xl font-bold">Home</a>
+        <a href="#shop" class="nav-link text-4xl font-bold">Shop</a>
+        <a href="#about" class="nav-link text-4xl font-bold">About</a>
+        <a href="#contact" class="nav-link text-4xl font-bold">Contact</a>
+    </div>
+
+    <div id="cart-overlay" class="cart-overlay"></div>
+    <div id="cart-modal" class="cart-modal">
+        <div class="p-6 flex justify-between items-center border-b border-gray-200">
+            <h2 class="text-2xl font-bold">Your Cart</h2>
+            <button id="close-cart-btn" class="text-2xl">&times;</button>
+        </div>
+        <div id="cart-items" class="flex-grow p-6 overflow-y-auto bg-gray-50"></div>
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex justify-between items-center text-xl font-bold mb-4">
+                <span>Total</span>
+                <span id="cart-total">$0</span>
+            </div>
+            <button class="primary-btn w-full">Checkout</button>
+        </div>
+    </div>
+
+    <main id="app-container">
+        <!-- HOME PAGE SECTION -->
+        <section id="home" class="page active">
+            <!-- Hero Section -->
+            <div class="min-h-screen flex flex-col justify-center p-4 sm:p-6 md:p-8 relative">
+                <div class="container mx-auto text-center">
+                    <h1 class="heading-xl reveal">Objects of Substance.</h1>
+                    <p class="max-w-2xl mx-auto my-8 text-lg text-gray-600 reveal" style="transition-delay: 0.2s;">A collection of thoughtfully designed goods that bring quality and character to your everyday life.</p>
+                    <div class="reveal" style="transition-delay: 0.4s;">
+                        <a href="#shop" class="nav-link primary-btn">Browse the Collection</a>
+                    </div>
+                </div>
+                 <div class="marquee w-full absolute bottom-0 left-0 py-8 bg-gray-100 border-t border-gray-200">
+                    <div class="marquee-content font-semibold text-2xl text-gray-500">
+                        <span>- Enduring Quality</span> <span class="mx-8 text-orange-700">*</span> <span>Thoughtful Design</span>
+                        <span class="mx-8 text-orange-700">*</span> <span>Modern Heirlooms</span> <span class="mx-8 text-orange-700">*</span>
+                        <span>Sustainable Materials</span> <span class="mx-8 text-orange-700">*</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Products Section -->
+            <div class="py-24 p-4 sm:p-6 md:p-8">
+                <div class="container mx-auto">
+                    <h2 class="heading-lg text-center mb-16 reveal">New Arrivals</h2>
+                    <div id="featured-product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                </div>
+            </div>
+
+            <!-- Our Philosophy Section -->
+            <div class="py-24 bg-white">
+                <div class="container mx-auto grid lg:grid-cols-2 gap-16 items-center p-4 sm:p-6 md:p-8">
+                    <div class="reveal">
+                         <div class="rounded-lg aspect-square w-full h-auto overflow-hidden">
+                            <img src="https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Crafting process" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div class="reveal lg:pl-12" style="transition-delay: 0.2s;">
+                        <h2 class="heading-lg mb-8">Built to Last.</h2>
+                        <p class="text-lg text-gray-600 mb-4">In a world of fleeting trends, we champion objects of timeless appeal and uncompromising quality. We source the finest materials and partner with master craftsmen to create goods that are not only beautiful but are made to be part of your story for years to come.</p>
+                        <a href="#about" class="nav-link secondary-btn mt-8">Our Philosophy</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop by Category Section -->
+            <div class="py-24 p-4 sm:p-6 md:p-8">
+                <div class="container mx-auto">
+                    <h2 class="heading-lg text-center mb-16 reveal">Shop by Category</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <a href="#shop" class="nav-link category-card reveal">
+                            <img src="https://images.pexels.com/photos/6782476/pexels-photo-6782476.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Homewares" class="category-card-image">
+                            <div class="category-card-content"><h3 class="text-3xl font-bold">Homewares</h3></div>
+                        </a>
+                        <a href="#shop" class="nav-link category-card reveal" style="transition-delay: 0.2s;">
+                            <img src="https://images.pexels.com/photos/1297611/pexels-photo-1297611.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Workspace" class="category-card-image">
+                            <div class="category-card-content"><h3 class="text-3xl font-bold">Workspace</h3></div>
+                        </a>
+                        <a href="#shop" class="nav-link category-card reveal" style="transition-delay: 0.4s;">
+                            <img src="https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Accessories" class="category-card-image">
+                            <div class="category-card-content"><h3 class="text-3xl font-bold">Accessories</h3></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonial Section -->
+            <div class="py-24 bg-white">
+                <div class="container mx-auto text-center max-w-4xl p-4 sm:p-6 md:p-8">
+                    <p class="text-3xl font-medium leading-relaxed reveal" style="font-family: 'Playfair Display', serif;">"Echelon's collection is a masterclass in modern, functional design. Each item feels special, and the attention to detail is evident. It's my go-to for finding meaningful gifts and elevating my own space."</p>
+                    <p class="mt-8 text-lg text-gray-500 reveal" style="transition-delay: 0.2s;">- Jordan Lee, Interior Stylist</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SHOP PAGE SECTION -->
+        <section id="shop" class="page min-h-screen py-32 p-4 sm:p-6 md:p-8">
+            <div class="container mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="heading-lg reveal">The Collection</h2>
+                    <p class="max-w-xl mx-auto text-lg text-gray-600 mt-4 reveal" style="transition-delay: 0.2s;">Discover pieces designed to seamlessly integrate into your life, enhancing your daily rituals with quiet elegance.</p>
+                </div>
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            </div>
+        </section>
+
+        <!-- PRODUCT DETAIL PAGE SECTION -->
+        <section id="product-detail" class="page min-h-screen py-32 p-4 sm:p-6 md:p-8">
+            <div id="product-detail-content" class="container mx-auto"></div>
+        </section>
+
+        <!-- ABOUT PAGE SECTION -->
+        <section id="about" class="page min-h-screen py-16 p-4 sm:p-6 md:p-8">
+            <div class="container mx-auto">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-16">
+                    <div class="reveal">
+                        <h2 class="heading-lg mb-8">Our Philosophy:<br>Buy Once, Buy Well.</h2>
+                        <p class="text-lg text-gray-600 mb-4">Echelon was born from a desire to move away from the disposable and embrace the durable. We believe in investing in fewer, better things—items that are crafted with integrity, designed with purpose, and made to last a lifetime.</p>
+                        <p class="text-lg text-gray-600">Our curation process is rigorous. We seek out independent designers and heritage brands who share our commitment to quality, sustainability, and timeless aesthetics.</p>
+                    </div>
+                    <div class="rounded-lg aspect-square w-full h-auto overflow-hidden reveal" style="transition-delay: 0.2s;">
+                        <img src="https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Well-designed interior" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-16">
+                    <div class="rounded-lg aspect-square w-full h-auto overflow-hidden reveal order-last lg:order-first" style="transition-delay: 0.2s;">
+                        <img src="https://images.pexels.com/photos/834892/pexels-photo-834892.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Craftsmanship" class="w-full h-full object-cover">
+                    </div>
+                     <div class="reveal lg:pl-12">
+                        <h2 class="heading-lg mb-8">A Partnership with Makers.</h2>
+                        <p class="text-lg text-gray-600 mb-4">We're proud to support a global community of artisans and small-scale manufacturers. By working directly with the makers, we ensure that every product not only meets our high standards but also supports fair, ethical, and sustainable practices.</p>
+                        <p class="text-lg text-gray-600">This direct relationship allows us to share the unique stories behind the products, connecting you to the hands that made them.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT PAGE SECTION -->
+        <section id="contact" class="page min-h-screen flex items-center p-4 sm:p-6 md:p-8">
+             <div class="container mx-auto">
+                <div class="text-center">
+                    <h2 class="heading-lg mb-4 reveal">Get in Touch.</h2>
+                    <p class="max-w-xl mx-auto text-lg text-gray-600 mb-12 reveal" style="transition-delay: 0.2s;">For inquiries, collaborations, or to simply share your thoughts, we'd love to hear from you.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <form id="contact-form" class="lg:col-span-2 max-w-xl mx-auto w-full reveal" style="transition-delay: 0.4s;">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                            <input type="text" placeholder="Your Name" required class="w-full p-4 bg-white rounded-lg border-2 border-gray-200 focus:border-orange-700 focus:outline-none transition-all">
+                            <input type="email" placeholder="Your Email" required class="w-full p-4 bg-white rounded-lg border-2 border-gray-200 focus:border-orange-700 focus:outline-none transition-all">
+                        </div>
+                        <textarea placeholder="Your Message" rows="6" required class="w-full p-4 bg-white rounded-lg mb-6 border-2 border-gray-200 focus:border-orange-700 focus:outline-none transition-all"></textarea>
+                        <button type="submit" class="primary-btn">Send Message</button>
+                    </form>
+                    <div class="reveal" style="transition-delay: 0.6s;">
+                        <h3 class="text-2xl font-bold mb-4">Contact Details</h3>
+                        <div class="space-y-4 text-lg text-gray-600">
+                            <p><strong>Email:</strong><br> <a href="mailto:hello@echelon.goods" class="hover:text-orange-700">hello@echelon.goods</a></p>
+                            <p><strong>Phone:</strong><br> <a href="tel:+1234567890" class="hover:text-orange-700">+1 (234) 567-890</a></p>
+                            <p><strong>Showroom:</strong><br> 456 Commerce St<br>Metropolis, 10101</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="p-8 bg-white border-t border-gray-200">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>&copy; 2025 Echelon. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const products = [
+                { id: 1, name: 'Walnut Desk Tray', price: 120, description: 'An elegant solid walnut organizer for your desk essentials.', imageUrl: 'https://images.pexels.com/photos/8000109/pexels-photo-8000109.jpeg?auto=compress&cs=tinysrgb&w=800', longDesc: 'Carved from a single piece of American black walnut, this desk tray brings a touch of natural warmth to your workspace. Its minimalist compartments are perfect for organizing pens, phone, and other small items.', details: { materials: 'Solid American Black Walnut', dimensions: 'L 25cm x W 15cm x H 2cm' } },
+                { id: 2, name: 'Linen Throw Blanket', price: 180, description: 'A soft, breathable throw made from 100% European linen.', imageUrl: 'https://images.pexels.com/photos/7195431/pexels-photo-7195431.jpeg?auto=compress&cs=tinysrgb&w=800', longDesc: 'Perfect for any season, this versatile linen throw is stonewashed for exceptional softness. Its beautiful texture and drape add a layer of relaxed elegance to a sofa or bed.', details: { materials: '100% European Flax Linen', dimensions: '130cm x 190cm' } },
+                { id: 3, name: 'Concrete Desk Lamp', price: 250, description: 'A minimalist lamp with a cast concrete base and exposed bulb.', imageUrl: 'https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=800', longDesc: 'This lamp celebrates the beauty of industrial materials. The solid concrete base is hand-cast, making each piece unique. It provides a warm, ambient glow perfect for a desk or bedside table.', details: { materials: 'Concrete, Brass Fitting, Cloth Cord', dimensions: 'H 15cm x Ø 10cm' } },
+                { id: 4, name: 'Leather Valet Tray', price: 95, description: 'A handcrafted leather catch-all for your daily essentials.', imageUrl: 'https://images.pexels.com/photos/8996655/pexels-photo-8996655.jpeg?auto=compress&cs=tinysrgb&w=800', longDesc: 'Keep your keys, wallet, and watch organized with this handsome valet tray. Made from full-grain vegetable-tanned leather, it will develop a beautiful patina over time.', details: { materials: 'Full-Grain Leather, Brass Rivets', dimensions: '15cm x 15cm (when snapped)' } },
+                { id: 5, name: 'Ceramic Pour-Over', price: 85, description: 'A beautifully crafted ceramic coffee dripper.', imageUrl: 'https://images.pexels.com/photos/5946636/pexels-photo-5946636.jpeg?auto=compress&cs=tinysrgb&w=800', longDesc: 'Elevate your morning coffee ritual. This ceramic pour-over cone is designed for optimal heat retention and water flow, ensuring a delicious and consistent brew every time.', details: { materials: 'Stoneware Ceramic', dimensions: 'Fits standard V60 filters' } },
+                { id: 6, name: 'Brass Page Marker', price: 40, description: 'A slim and elegant brass bookmark that doubles as a ruler.', imageUrl: 'https://images.pexels.com/photos/6214388/pexels-photo-6214388.jpeg?auto=compress&cs=tinysrgb&w=800', longDesc: 'Never lose your place again with this beautifully machined brass page marker. It\'s sturdy enough to last a lifetime and features engraved metric and imperial measurements for quick reference.', details: { materials: 'Solid Brass', dimensions: 'L 15cm x W 2.5cm' } },
+            ];
+            
+            let cart = JSON.parse(localStorage.getItem('echelonCart')) || [];
+
+            const Selectors = {
+                pages: document.querySelectorAll('.page'), navLinks: document.querySelectorAll('.nav-link'),
+                productGrid: document.getElementById('product-grid'), featuredGrid: document.getElementById('featured-product-grid'),
+                productDetailContent: document.getElementById('product-detail-content'),
+                cartBtn: document.getElementById('cart-btn'), cartCount: document.getElementById('cart-count'),
+                mobileMenuBtn: document.getElementById('mobile-menu-btn'), mobileMenu: document.getElementById('mobile-menu'),
+                contactForm: document.getElementById('contact-form'), toast: document.getElementById('toast'),
+                cartOverlay: document.getElementById('cart-overlay'), cartModal: document.getElementById('cart-modal'),
+                closeCartBtn: document.getElementById('close-cart-btn'), cartItemsContainer: document.getElementById('cart-items'),
+                cartTotalEl: document.getElementById('cart-total'), preloader: document.getElementById('preloader'),
+                header: document.getElementById('header'),
+            };
+
+            const UI = {
+                showPage(pageId) {
+                    Selectors.pages.forEach(page => page.classList.remove('active'));
+                    const activePage = document.getElementById(pageId);
+                    if (activePage) {
+                        activePage.classList.add('active'); window.scrollTo(0, 0);
+                        setTimeout(() => this.handleScrollAnimations(), 100);
+                    }
+                },
+                showToast(message) {
+                    Selectors.toast.textContent = message; Selectors.toast.classList.add('show');
+                    setTimeout(() => Selectors.toast.classList.remove('show'), 3000);
+                },
+                handleScrollHeader() {
+                    if (window.scrollY > 50) Selectors.header.classList.add('scrolled');
+                    else Selectors.header.classList.remove('scrolled');
+                },
+                handleScrollAnimations() {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+                    }, { threshold: 0.1 });
+                    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+                },
+                toggleMobileMenu() { Selectors.mobileMenu.classList.toggle('-translate-y-full'); },
+                openCart() { Cart.render(); Selectors.cartOverlay.classList.add('active'); Selectors.cartModal.classList.add('active'); },
+                closeCart() { Selectors.cartOverlay.classList.remove('active'); Selectors.cartModal.classList.remove('active'); }
+            };
+
+            const ProductRenderer = {
+                _createCard(product, index, delay = 0) {
+                   return `
+                        <div class="product-card cursor-pointer reveal" data-product-id="${product.id}" style="transition-delay: ${index * 0.1 + delay}s;">
+                            <div class="product-image-container aspect-[3/4]"><img src="${product.imageUrl}" alt="${product.name}" class="product-image w-full h-full object-cover"></div>
+                            <div class="p-6 text-center">
+                                <h3 class="text-xl font-semibold">${product.name}</h3>
+                                <p class="text-lg text-gray-500 mt-1">$${product.price}</p>
+                            </div>
+                        </div>`;
+                },
+                renderAll() {
+                    if (Selectors.productGrid) Selectors.productGrid.innerHTML = products.map((p, i) => this._createCard(p, i, 0.3)).join('');
+                },
+                renderFeatured() {
+                    if (Selectors.featuredGrid) Selectors.featuredGrid.innerHTML = products.slice(0, 3).map((p, i) => this._createCard(p, i)).join('');
+                },
+                renderDetail(productId) {
+                    const product = products.find(p => p.id == productId);
+                    if (!product) return;
+                    Selectors.productDetailContent.innerHTML = `
+                        <a href="#shop" class="nav-link secondary-btn mb-12">← Back to Collection</a>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
+                            <div class="rounded-lg aspect-[3/4] reveal overflow-hidden"><img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover rounded-lg"></div>
+                            <div class="reveal" style="transition-delay: 0.2s;">
+                                <h2 class="text-4xl md:text-5xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">${product.name}</h2>
+                                <p class="text-3xl text-orange-800 font-semibold mb-6">$${product.price}</p>
+                                <p class="text-lg text-gray-600 mb-8">${product.longDesc}</p>
+                                <div class="border-t border-gray-200 pt-6 mb-8">
+                                    <h4 class="font-semibold mb-2">Materials</h4><p class="text-gray-600">${product.details.materials}</p>
+                                    <h4 class="font-semibold mt-4 mb-2">Dimensions</h4><p class="text-gray-600">${product.details.dimensions}</p>
+                                </div>
+                                <button class="add-to-cart-btn primary-btn w-full sm:w-auto" data-product-id="${product.id}">Add to Cart</button>
+                            </div>
+                        </div>`;
+                }
+            };
+            
+            const Cart = {
+                save() { localStorage.setItem('echelonCart', JSON.stringify(cart)); },
+                add(productId) {
+                    const existingItem = cart.find(item => item.id == productId);
+                    if (existingItem) existingItem.quantity++;
+                    else cart.push({ id: parseInt(productId), quantity: 1 });
+                    this.save(); this.updateUI();
+                    const product = products.find(p => p.id == productId);
+                    UI.showToast(`${product.name} added to cart!`);
+                },
+                updateQuantity(productId, newQuantity) {
+                    const item = cart.find(item => item.id == productId);
+                    if (item) {
+                        if (newQuantity > 0) item.quantity = newQuantity; else this.remove(productId);
+                        this.save(); this.render();
+                    }
+                },
+                remove(productId) {
+                    cart = cart.filter(item => item.id != productId);
+                    this.save(); this.render();
+                    const product = products.find(p => p.id == productId);
+                    if(product) UI.showToast(`${product.name} removed from cart.`);
+                },
+                updateUI() {
+                    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                    Selectors.cartCount.textContent = `(${totalItems})`;
+                },
+                render() {
+                    this.updateUI();
+                    if (cart.length === 0) {
+                        Selectors.cartItemsContainer.innerHTML = '<p class="text-gray-500 p-6">Your cart is empty.</p>';
+                        Selectors.cartTotalEl.textContent = '$0'; return;
+                    }
+                    let total = 0;
+                    Selectors.cartItemsContainer.innerHTML = cart.map(cartItem => {
+                        const product = products.find(p => p.id === cartItem.id);
+                        if (!product) return '';
+                        total += product.price * cartItem.quantity;
+                        return `
+                            <div class="flex items-center gap-4 py-4 px-6 border-b border-gray-200">
+                                <img src="${product.imageUrl}" alt="${product.name}" class="w-16 h-20 object-cover rounded-md">
+                                <div class="flex-grow">
+                                    <h4 class="font-semibold">${product.name}</h4>
+                                    <p class="text-gray-500">$${product.price}</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <button class="cart-quantity-btn" data-id="${product.id}" data-change="-1">-</button>
+                                        <span>${cartItem.quantity}</span>
+                                        <button class="cart-quantity-btn" data-id="${product.id}" data-change="1">+</button>
+                                    </div>
+                                </div>
+                                <button class="remove-from-cart-btn text-red-500 hover:text-red-400 font-bold" data-id="${product.id}">Remove</button>
+                            </div>`;
+                    }).join('');
+                    Selectors.cartTotalEl.textContent = `$${total.toFixed(2)}`;
+                }
+            };
+            
+            function setupEventListeners() {
+                Selectors.navLinks.forEach(link => link.addEventListener('click', e => {
+                    e.preventDefault(); UI.showPage(link.getAttribute('href').substring(1));
+                    if (!Selectors.mobileMenu.classList.contains('-translate-y-full')) UI.toggleMobileMenu();
+                }));
+                const handleProductClick = e => {
+                    const card = e.target.closest('.product-card');
+                    if (card) {
+                        ProductRenderer.renderDetail(card.dataset.productId); UI.showPage('product-detail');
+                    }
+                };
+                Selectors.productGrid.addEventListener('click', handleProductClick);
+                Selectors.featuredGrid.addEventListener('click', handleProductClick);
+                Selectors.productDetailContent.addEventListener('click', e => { if (e.target.classList.contains('add-to-cart-btn')) Cart.add(e.target.dataset.productId); });
+                Selectors.mobileMenuBtn.addEventListener('click', UI.toggleMobileMenu);
+                Selectors.cartBtn.addEventListener('click', UI.openCart);
+                Selectors.closeCartBtn.addEventListener('click', UI.closeCart);
+                Selectors.cartOverlay.addEventListener('click', UI.closeCart);
+                Selectors.cartItemsContainer.addEventListener('click', e => {
+                    const target = e.target; const id = target.dataset.id;
+                    if (target.classList.contains('remove-from-cart-btn')) Cart.remove(id);
+                    if (target.classList.contains('cart-quantity-btn')) {
+                        const item = cart.find(i => i.id == id); const change = parseInt(target.dataset.change);
+                        Cart.updateQuantity(id, item.quantity + change);
+                    }
+                });
+                Selectors.contactForm.addEventListener('submit', e => { e.preventDefault(); UI.showToast("Message sent!"); Selectors.contactForm.reset(); });
+                window.addEventListener('scroll', () => { UI.handleScrollHeader(); UI.handleScrollAnimations(); });
+                const cursor = document.querySelector('.cursor');
+                window.addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+                document.querySelectorAll('a, button, .cursor-pointer').forEach(target => {
+                    target.addEventListener('mouseenter', () => cursor.classList.add('hover-grow'));
+                    target.addEventListener('mouseleave', () => cursor.classList.remove('hover-grow'));
+                });
+            }
+
+            function init() {
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        Selectors.preloader.classList.add('fade-out');
+                        setTimeout(() => Selectors.preloader.style.display = 'none', 500);
+                        UI.showPage('home'); ProductRenderer.renderFeatured(); ProductRenderer.renderAll();
+                        Cart.render(); setupEventListeners();
+                    }, 500);
+                });
+            }
+            init();
+        });
+    </script>
+</body>
+</html>
+

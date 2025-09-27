@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aperture | Modern E-commerce</title>
+    
+    <!-- Tailwind CSS for rapid, modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- This block contains all the custom CSS, similar to a separate style.css file -->
+   <link rel="stylesheet" href="style.css"></head>
+<body class="antialiased">
+    
+    <!-- Preloader -->
+    <div id="preloader" class="preloader">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Custom Cursor Element -->
+    <div class="cursor"></div>
+
+    <!-- Toast Notification Element -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Header & Navigation -->
+    <header id="header" class="fixed top-0 left-0 w-full z-50 p-4 sm:p-6 md:p-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#home" class="nav-link text-2xl font-bold tracking-tighter cursor-pointer">Aperture</a>
+            <nav class="hidden md:flex items-center gap-4 bg-white/5 backdrop-blur-sm p-2 rounded-full border border-white/10">
+                <a href="#home" class="nav-link px-4 py-2 rounded-full hover:bg-white/20 transition-colors">Home</a>
+                <a href="#shop" class="nav-link px-4 py-2 rounded-full hover:bg-white/20 transition-colors">Shop</a>
+                <a href="#about" class="nav-link px-4 py-2 rounded-full hover:bg-white/20 transition-colors">About</a>
+                <a href="#contact" class="nav-link px-4 py-2 rounded-full hover:bg-white/20 transition-colors">Contact</a>
+            </nav>
+            <button id="cart-btn" class="px-4 py-2 rounded-full bg-white text-black hover:bg-indigo-500 hover:text-white transition-colors relative">
+                Cart <span id="cart-count" class="ml-1">(0)</span>
+            </button>
+            <button id="mobile-menu-btn" class="md:hidden z-50 text-2xl">☰</button>
+        </div>
+    </header>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-0 left-0 w-full h-full bg-[#121212] flex flex-col justify-center items-center gap-8 z-40 transition-transform transform -translate-y-full">
+        <a href="#home" class="nav-link text-4xl font-bold">Home</a>
+        <a href="#shop" class="nav-link text-4xl font-bold">Shop</a>
+        <a href="#about" class="nav-link text-4xl font-bold">About</a>
+        <a href="#contact" class="nav-link text-4xl font-bold">Contact</a>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-overlay" class="cart-overlay"></div>
+    <div id="cart-modal" class="cart-modal">
+        <div class="p-6 flex justify-between items-center border-b border-gray-700">
+            <h2 class="text-2xl font-bold">Your Cart</h2>
+            <button id="close-cart-btn" class="text-2xl">&times;</button>
+        </div>
+        <div id="cart-items" class="flex-grow p-6 overflow-y-auto"></div>
+        <div class="p-6 border-t border-gray-700">
+            <div class="flex justify-between items-center text-xl font-bold mb-4">
+                <span>Total</span>
+                <span id="cart-total">$0</span>
+            </div>
+            <button class="primary-btn w-full">Checkout</button>
+        </div>
+    </div>
+
+
+    <main id="app-container">
+        <!-- HOME PAGE SECTION -->
+        <section id="home" class="page active">
+            <!-- Hero Section -->
+            <div class="min-h-screen flex flex-col justify-center p-4 sm:p-6 md:p-8 relative">
+                <div class="container mx-auto text-center">
+                    <h1 class="heading-xl reveal">Design in Motion.</h1>
+                    <p class="max-w-2xl mx-auto my-8 text-lg text-gray-400 reveal" style="transition-delay: 0.2s;">Discover our curated collection of objects that blend form and function, designed for the modern connoisseur.</p>
+                    <div class="reveal" style="transition-delay: 0.4s;">
+                        <a href="#shop" class="nav-link primary-btn">Explore Collection</a>
+                    </div>
+                </div>
+                 <div class="marquee w-full absolute bottom-0 left-0 py-8 bg-black/50 backdrop-blur-sm">
+                    <div class="marquee-content font-semibold text-2xl">
+                        <span>- Sleek Designs</span> <span class="mx-8 text-indigo-500">*</span> <span>Premium Materials</span>
+                        <span class="mx-8 text-indigo-500">*</span> <span>Timeless Aesthetics</span> <span class="mx-8 text-indigo-500">*</span>
+                        <span>Functional Art</span> <span class="mx-8 text-indigo-500">*</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Products Section -->
+            <div class="py-24 p-4 sm:p-6 md:p-8">
+                <div class="container mx-auto">
+                    <h2 class="heading-lg text-center mb-16 reveal">Featured Products</h2>
+                    <div id="featured-product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                </div>
+            </div>
+
+            <!-- Our Philosophy Section -->
+            <div class="py-24 bg-[#1f1f1f]">
+                <div class="container mx-auto grid lg:grid-cols-2 gap-16 items-center p-4 sm:p-6 md:p-8">
+                    <div class="reveal">
+                         <div class="bg-gray-800 rounded-2xl aspect-square w-full h-auto">
+                            <img src="https://images.unsplash.com/photo-1533109721025-d1ae7de64f72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Design sketch" class="w-full h-full object-cover rounded-2xl">
+                        </div>
+                    </div>
+                    <div class="reveal lg:pl-12" style="transition-delay: 0.2s;">
+                        <h2 class="heading-lg mb-8">Design with <br>Intention.</h2>
+                        <p class="text-lg text-gray-400 mb-4">We believe that the objects we surround ourselves with should do more than just exist; they should inspire. Each piece in our collection is chosen for its ability to turn everyday routines into moments of quiet beauty.</p>
+                        <a href="#about" class="nav-link secondary-btn mt-8">Learn Our Story</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop by Category Section -->
+            <div class="py-24 p-4 sm:p-6 md:p-8">
+                <div class="container mx-auto">
+                    <h2 class="heading-lg text-center mb-16 reveal">Explore by Category</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <a href="#shop" class="nav-link category-card reveal">
+                            <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Furniture" class="category-card-image">
+                            <div class="category-card-content">
+                                <h3 class="text-3xl font-bold">Furniture</h3>
+                            </div>
+                        </a>
+                        <a href="#shop" class="nav-link category-card reveal" style="transition-delay: 0.2s;">
+                            <img src="https://images.unsplash.com/photo-1532349392470-a0a10404a558?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Lighting" class="category-card-image">
+                            <div class="category-card-content">
+                                <h3 class="text-3xl font-bold">Lighting</h3>
+                            </div>
+                        </a>
+                        <a href="#shop" class="nav-link category-card reveal" style="transition-delay: 0.4s;">
+                            <img src="https://images.unsplash.com/photo-1592078615290-033ee584e267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=969&q=80" alt="Decor" class="category-card-image">
+                            <div class="category-card-content">
+                                <h3 class="text-3xl font-bold">Decor</h3>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonial Section -->
+            <div class="py-24 bg-[#1f1f1f]">
+                <div class="container mx-auto text-center max-w-4xl p-4 sm:p-6 md:p-8">
+                    <p class="text-3xl font-medium leading-relaxed reveal">"The quality and craftsmanship are unparalleled. My space has been completely transformed by the pieces I've collected from Aperture. It's not just furniture, it's art."</p>
+                    <p class="mt-8 text-lg text-gray-400 reveal" style="transition-delay: 0.2s;">- Alex Chen, Designer</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SHOP PAGE SECTION -->
+        <section id="shop" class="page min-h-screen py-32 p-4 sm:p-6 md:p-8">
+            <div class="container mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="heading-lg reveal">Our Collection</h2>
+                    <p class="max-w-xl mx-auto text-lg text-gray-400 mt-4 reveal" style="transition-delay: 0.2s;">Every object is a piece of a larger story, meticulously crafted and chosen for its character and quality.</p>
+                </div>
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            </div>
+        </section>
+
+        <!-- PRODUCT DETAIL PAGE SECTION -->
+        <section id="product-detail" class="page min-h-screen py-32 p-4 sm:p-6 md:p-8">
+            <div id="product-detail-content" class="container mx-auto"></div>
+        </section>
+
+        <!-- ABOUT PAGE SECTION -->
+        <section id="about" class="page min-h-screen py-16 p-4 sm:p-6 md:p-8">
+            <div class="container mx-auto">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-16">
+                    <div class="reveal">
+                        <h2 class="heading-lg mb-8">We Believe in <br>Better Objects.</h2>
+                        <p class="text-lg text-gray-400 mb-4">Aperture was founded on a simple principle: to create and curate objects that are not only beautiful but also enriching to live with. Our design philosophy is rooted in minimalism, functionality, and a deep respect for materials.</p>
+                        <p class="text-lg text-gray-400">We collaborate with artisans and designers who share our vision, ensuring every piece in our collection is crafted with intention and built to last.</p>
+                    </div>
+                    <div class="bg-gray-800 rounded-2xl aspect-square w-full h-auto reveal" style="transition-delay: 0.2s;">
+                        <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Aperture Studio" class="w-full h-full object-cover rounded-2xl">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-16">
+                    <div class="bg-gray-800 rounded-2xl aspect-square w-full h-auto reveal order-last lg:order-first" style="transition-delay: 0.2s;">
+                        <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Craftsmanship" class="w-full h-full object-cover rounded-2xl">
+                    </div>
+                     <div class="reveal lg:pl-12">
+                        <h2 class="heading-lg mb-8">A Commitment <br>to Craft.</h2>
+                        <p class="text-lg text-gray-400 mb-4">From the initial sketch to the final product, every step is infused with care. We partner with small workshops and individual artisans who use sustainable practices and traditional techniques passed down through generations.</p>
+                        <p class="text-lg text-gray-400">This approach not only results in superior quality but also supports a global community of makers and preserves invaluable skills.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT PAGE SECTION -->
+        <section id="contact" class="page min-h-screen flex items-center p-4 sm:p-6 md:p-8">
+             <div class="container mx-auto">
+                <div class="text-center">
+                    <h2 class="heading-lg mb-4 reveal">Let's Connect.</h2>
+                    <p class="max-w-xl mx-auto text-lg text-gray-400 mb-12 reveal" style="transition-delay: 0.2s;">Have a question, a project idea, or just want to say hello? Drop us a line.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <form id="contact-form" class="lg:col-span-2 max-w-xl mx-auto w-full reveal" style="transition-delay: 0.4s;">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                            <input type="text" placeholder="Your Name" required class="w-full p-4 bg-black/50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none transition-all">
+                            <input type="email" placeholder="Your Email" required class="w-full p-4 bg-black/50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none transition-all">
+                        </div>
+                        <textarea placeholder="Your Message" rows="6" required class="w-full p-4 bg-black/50 rounded-xl mb-6 border-2 border-transparent focus:border-indigo-500 focus:outline-none transition-all"></textarea>
+                        <button type="submit" class="primary-btn">Send Message</button>
+                    </form>
+                    <div class="reveal" style="transition-delay: 0.6s;">
+                        <h3 class="text-2xl font-bold mb-4">Contact Details</h3>
+                        <div class="space-y-4 text-lg text-gray-400">
+                            <p><strong>Email:</strong><br> <a href="mailto:hello@aperture.design" class="hover:text-indigo-400">hello@aperture.design</a></p>
+                            <p><strong>Phone:</strong><br> <a href="tel:+1234567890" class="hover:text-indigo-400">+1 (234) 567-890</a></p>
+                            <p><strong>Studio:</strong><br> 123 Design Lane<br>Metropolis, 10101</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="p-8 bg-[#1f1f1f]">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>&copy; 2025 Aperture. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- This script block contains all the JavaScript, similar to a separate app.js file -->
+    <script src="script.js"></script>   
+</body>
+</html>
+

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- General Styles --- */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2em 1em;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 2em 3em;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        /* --- Form Styles --- */
+        .feedback-form {
+            margin-bottom: 3em;
+        }
+
+        .feedback-form label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5em;
+            color: #34495e;
+        }
+
+        .feedback-form input[type="text"],
+        .feedback-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .feedback-form input[type="text"]:focus,
+        .feedback-form textarea:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            outline: none;
+        }
+
+        .feedback-form input[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: inline-block;
+            margin-top: 1em;
+        }
+
+        .feedback-form input[type="submit"]:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* --- Feedback Item Styles --- */
+        .feedback-item {
+            background-color: #f8f9f9;
+            border: 1px solid #ecf0f1;
+            padding: 1.5em;
+            margin-bottom: 1em;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+        }
+
+        .feedback-item p {
+            margin: 0.3em 0;
+            line-height: 1.6;
+        }
+
+        .feedback-item strong {
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+
+        .feedback-item small {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .no-feedback {
+            color: #7f8c8d;
+            text-align: center;
+            padding: 2em;
+            background-color: #f8f9f9;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Leave Your Feedback</h1>
+        <div class="feedback-form">
+            <form action="/submit" method="post">
+                <label for="author">Your Name:</label>
+                <input type="text" id="author" name="author" required><br><br>
+                <label for="comment">Comment:</label>
+                <textarea id="comment" name="comment" rows="4" cols="50" required></textarea><br><br>
+                <input type="submit" value="Submit Feedback">
+            </form>
+        </div>
+
+        <h2>Recent Comments</h2>
+        {% for feedback in feedbacks %}
+            <div class="feedback-item">
+                <p><strong>{{ feedback.author }}</strong> <small>on {{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                <p>{{ feedback.comment }}</p>
+            </div>
+        {% else %}
+            <p class="no-feedback">No feedback yet. Be the first!</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
